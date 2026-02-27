@@ -161,6 +161,17 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         
+        .export-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .export-buttons .cta-button {
+            width: auto;
+            flex: 1;
+        }
+        
         .role-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -248,6 +259,23 @@
             border: 1px solid #f5c6cb;
         }
         
+        .data-section {
+            background: #e9f7fe;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 2rem 0;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: monospace;
+            resize: vertical;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -259,6 +287,10 @@
             
             .role-grid, .role-options {
                 grid-template-columns: 1fr;
+            }
+            
+            .export-buttons {
+                flex-direction: column;
             }
         }
     </style>
@@ -286,7 +318,6 @@
                     <label for="memberName">Select Your Identity:</label>
                     <select id="memberName" onchange="checkSelection()">
                         <option value="">-- Select Your Name --</option>
-                        <!-- Removed Aditya Sadhu since he's the supervisor -->
                         <option value="Rohit Pandit">Rohit Pandit</option>
                         <option value="Khushi">Khushi</option>
                         <option value="Vanshita">Vanshita</option>
@@ -328,6 +359,24 @@
                 <button class="cta-button" onclick="submitRole()" id="submitBtn" disabled>
                     Confirm Role Selection
                 </button>
+                
+                <div class="export-buttons">
+                    <button class="cta-button" onclick="exportToCSV()" style="background: #28a745;">
+                        Export to CSV
+                    </button>
+                    <button class="cta-button" onclick="exportToJSON()" style="background: #17a2b8;">
+                        Export to JSON
+                    </button>
+                    <button class="cta-button" onclick="clearData()" style="background: #dc3545;">
+                        Clear Data
+                    </button>
+                </div>
+            </div>
+
+            <div class="data-section">
+                <h2>Role Selection Data</h2>
+                <p>Supervisor Access: Copy the data below to track selections</p>
+                <textarea id="dataOutput" readonly></textarea>
             </div>
 
             <div class="team-info">
@@ -368,15 +417,34 @@
     </div>
     
     <script>
-        let selectedRoleId = null;
-        let selectedMember = null;
-        let roleAssignments = {
+        // Initialize data from localStorage or create empty object
+        let roleAssignments = JSON.parse(localStorage.getItem('roleAssignments')) || {
             'PRID_1': 'Aditya Sadhu',
             'PRID_2': null,
             'PRID_3': null,
             'PRID_4': null,
             'PRID_5': null
         };
+        
+        let selectionHistory = JSON.parse(localStorage.getItem('selectionHistory')) || [];
+        
+        // Initialize the UI with saved data
+        window.onload = function() {
+            updateUIWithSavedData();
+            updateDataOutput();
+        };
+        
+        function updateUIWithSavedData() {
+            // Update role assignments display
+            for (let roleId in roleAssignments) {
+                if (roleAssignments[roleId]) {
+                    document.getElementById(`assignee-${roleId}`).textContent = roleAssignments[roleId];
+                    document.getElementById(`badge-${roleId}`).className = 'status-badge status-claimed';
+                    document.getElementById(`badge-${roleId}`).textContent = 'CLAIMED';
+                    document.getElementById(`status-${roleId}`).textContent = `Status: Claimed by ${roleAssignments[roleId]}`;
+                }
+            }
+        }
         
         function selectRole(element, roleId) {
             // Remove selection from all roles
@@ -418,11 +486,25 @@
             // Assign role
             roleAssignments[selectedRoleId] = selectedMember;
             
+            // Add to selection history
+            selectionHistory.push({
+                member: selectedMember,
+                role: selectedRoleId,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('roleAssignments', JSON.stringify(roleAssignments));
+            localStorage.setItem('selectionHistory', JSON.stringify(selectionHistory));
+            
             // Update UI
             document.getElementById(`assignee-${selectedRoleId}`).textContent = selectedMember;
             document.getElementById(`badge-${selectedRoleId}`).className = 'status-badge status-claimed';
             document.getElementById(`badge-${selectedRoleId}`).textContent = 'CLAIMED';
             document.getElementById(`status-${selectedRoleId}`).textContent = `Status: Claimed by ${selectedMember}`;
+            
+            // Update data output
+            updateDataOutput();
             
             // Show success message
             showNotification(`Congratulations ${selectedMember}! You have successfully claimed the ${selectedRoleId} role.`, 'success');
@@ -449,6 +531,80 @@
                 notification.style.display = 'none';
             }, 5000);
         }
+        
+        function updateDataOutput() {
+            // Format data for easy copying
+            let outputText = "Member Name,Role ID,Timestamp\n";
+            
+            selectionHistory.forEach(entry => {
+                outputText += `${entry.member},${entry.role},${entry.timestamp}\n`;
+            });
+            
+            document.getElementById('dataOutput').value = outputText;
+        }
+        
+        function exportToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Member Name,Role ID,Timestamp\n";
+            
+            selectionHistory.forEach(entry => {
+                csvContent += `"${entry.member}","${entry.role}","${entry.timestamp}"\n`;
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "role_selections.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('CSV file downloaded successfully!', 'success');
+        }
+        
+        function exportToJSON() {
+            const data = {
+                roleAssignments: roleAssignments,
+                selectionHistory: selectionHistory
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const link = document.createElement("a");
+            link.setAttribute("href", dataUri);
+            link.setAttribute("download", "role_selections.json");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('JSON file downloaded successfully!', 'success');
+        }
+        
+        function clearData() {
+            if (confirm('Are you sure you want to clear all role selection data? This cannot be undone.')) {
+                roleAssignments = {
+                    'PRID_1': 'Aditya Sadhu',
+                    'PRID_2': null,
+                    'PRID_3': null,
+                    'PRID_4': null,
+                    'PRID_5': null
+                };
+                selectionHistory = [];
+                
+                localStorage.setItem('roleAssignments', JSON.stringify(roleAssignments));
+                localStorage.setItem('selectionHistory', JSON.stringify(selectionHistory));
+                
+                updateUIWithSavedData();
+                updateDataOutput();
+                
+                showNotification('All data cleared successfully!', 'success');
+            }
+        }
+        
+        // Initialize variables
+        let selectedRoleId = null;
+        let selectedMember = null;
     </script>
 </body>
 </html>
