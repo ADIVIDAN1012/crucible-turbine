@@ -1,0 +1,51 @@
+# Orbit: Code Ownership & Isolation Policy
+# This file enforces that only specific PRIDs can approve changes to their work zones.
+
+# --- PRID OWNERSHIP MAPPINGS ---
+
+# PRID_1: Architect
+/TeamWork/core/turbine.py    @aadityasadhu
+/TeamWork/core/integrity_guard.py @aadityasadhu
+
+# PRID_2: Auditor
+/TeamWork/Guidelines_Breakdown/ @auditor_PRID_2
+
+# PRID_3: Designer
+/TeamWork/static/ @designer_PRID_3
+
+# PRID_4: Integrator
+/TeamWork/modules/api_ext.py @integrator_PRID_4
+
+# PRID_5: DBA
+/TeamWork/core/database.py @dba_PRID_5
+/TeamWork/core/models.py @dba_PRID_5
+
+# PRID_6: Security
+/TeamWork/auth/security.py @security_PRID_6
+
+# PRID_7: Tester
+/TeamWork/tests/ @tester_PRID_7
+
+# PRID_8: Forensics
+/TeamWork/modules/forensic_logic.py @forensics_PRID_8
+
+# PRID_9: DevOps
+/Dockerfile @devops_PRID_9
+/docker-compose.yml @devops_PRID_9
+/Procfile @devops_PRID_9
+/runtime.txt @devops_PRID_9
+/wsgi.py @devops_PRID_9
+/.github/workflows/ @devops_PRID_9
+
+# PRID_10: Recorder
+/TeamWork/core/logger.py @recorder_PRID_10
+
+# PRID_11: Researcher (UI)
+/TeamWork/modules/research_ui.md @researcher_ui_PRID_11
+
+# PRID_12: Researcher (Crypto)
+/TeamWork/modules/research_crypto.md @researcher_crypto_PRID_12
+
+# PRID_13: Optimizer
+/TeamWork/modules/sync_opt.py @optimizer_PRID_13
+

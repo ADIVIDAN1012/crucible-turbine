@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crucible Turbine Role Selection Form (CTRSF)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #2c3e50, #4a6491);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .content {
+            padding: 2rem;
+        }
+        
+        .intro {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #4a6491;
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e1e8ed;
+            margin: 2rem 0;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        select, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            background: #f8f9fa;
+        }
+        
+        .role-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .role-option {
+            padding: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .role-option:hover {
+            border-color: #4a6491;
+            background: #f8f9fa;
+        }
+        
+        .role-option.selected {
+            border-color: #4a6491;
+            background: #e3f2fd;
+            transform: translateY(-2px);
+        }
+        
+        .role-option h3 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .role-option h3 span {
+            background: #4a6491;
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+        }
+        
+        .cta-button {
+            display: block;
+            width: 100%;
+            background: #4a6491;
+            color: white;
+            padding: 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        
+        .cta-button:hover {
+            background: #3a5275;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .role-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e1e8ed;
+        }
+        
+        .role-card.reserved {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px solid #4a6491;
+        }
+        
+        .role-card h3 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 0.5rem;
+        }
+        
+        .status-reserved {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .status-claimed {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status-pending {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .team-info {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 2rem 0;
+            text-align: center;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            background: #2c3e50;
+            color: #ecf0f1;
+            font-size: 0.9rem;
+        }
+        
+        .notification {
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+            text-align: center;
+            display: none;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .role-grid, .role-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Crucible Turbine Role Selection Form (CTRSF)</h1>
+            <div class="subtitle">High-Integrity Project Management System</div>
+        </header>
+
+        <div class="content">
+            <div class="intro">
+                <h2>Role Selection Portal</h2>
+                <p>Select your identity and preferred role to join the Crucible Turbine project. 
+                Only the Supervisor role is pre-assigned. All other roles are available for selection.</p>
+            </div>
+
+            <div class="form-container">
+                <h2>Claim Your Role</h2>
+                
+                <div class="notification" id="notification"></div>
+                
+                <div class="form-group">
+                    <label for="memberName">Select Your Identity:</label>
+                    <select id="memberName" onchange="checkSelection()">
+                        <option value="">-- Select Your Name --</option>
+                        <option value="Aditya Sadhu">Aditya Sadhu</option>
+                        <option value="Rohit Pandit">Rohit Pandit</option>
+                        <option value="Khushi">Khushi</option>
+                        <option value="Vanshita">Vanshita</option>
+                        <option value="Shrawan">Shrawan</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Available Roles:</label>
+                    <div class="role-options">
+                        <div class="role-option" onclick="selectRole(this, 'PRID_2')">
+                            <h3><span>PRID_2</span> Auditor</h3>
+                            <p>Compliance verification, integrity assurance</p>
+                            <small id="status-PRID_2">Status: Available</small>
+                        </div>
+                        
+                        <div class="role-option" onclick="selectRole(this, 'PRID_3')">
+                            <h3><span>PRID_3</span> Designer</h3>
+                            <p>UI/UX design, frontend implementation</p>
+                            <small id="status-PRID_3">Status: Available</small>
+                        </div>
+                        
+                        <div class="role-option" onclick="selectRole(this, 'PRID_4')">
+                            <h3><span>PRID_4</span> Integrator</h3>
+                            <p>API integration, external connections</p>
+                            <small id="status-PRID_4">Status: Available</small>
+                        </div>
+                        
+                        <div class="role-option" onclick="selectRole(this, 'PRID_5')">
+                            <h3><span>PRID_5</span> DBA</h3>
+                            <p>Database design, performance optimization</p>
+                            <small id="status-PRID_5">Status: Available</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <input type="hidden" id="selectedRole" value="">
+                
+                <button class="cta-button" onclick="submitRole()" id="submitBtn" disabled>
+                    Confirm Role Selection
+                </button>
+            </div>
+
+            <div class="team-info">
+                <h2>Current Role Assignments</h2>
+                <div class="role-grid">
+                    <div class="role-card reserved">
+                        <h3><span>PRID_1</span> Supervisor <span class="status-badge status-reserved">RESERVED</span></h3>
+                        <p><strong>Assigned to:</strong> Aditya Sadhu</p>
+                    </div>
+                    
+                    <div class="role-card">
+                        <h3><span>PRID_2</span> Auditor <span class="status-badge status-pending" id="badge-PRID_2">PENDING</span></h3>
+                        <p><strong>Assigned to:</strong> <span id="assignee-PRID_2">Unclaimed</span></p>
+                    </div>
+                    
+                    <div class="role-card">
+                        <h3><span>PRID_3</span> Designer <span class="status-badge status-pending" id="badge-PRID_3">PENDING</span></h3>
+                        <p><strong>Assigned to:</strong> <span id="assignee-PRID_3">Unclaimed</span></p>
+                    </div>
+                    
+                    <div class="role-card">
+                        <h3><span>PRID_4</span> Integrator <span class="status-badge status-pending" id="badge-PRID_4">PENDING</span></h3>
+                        <p><strong>Assigned to:</strong> <span id="assignee-PRID_4">Unclaimed</span></p>
+                    </div>
+                    
+                    <div class="role-card">
+                        <h3><span>PRID_5</span> DBA <span class="status-badge status-pending" id="badge-PRID_5">PENDING</span></h3>
+                        <p><strong>Assigned to:</strong> <span id="assignee-PRID_5">Unclaimed</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Crucible Turbine Role Selection Form (CTRSF) v1.0</p>
+            <p>Industrial-Grade Responsibility Mapping | Strategic Integrity Framework</p>
+        </footer>
+    </div>
+    
+    <script>
+        let selectedRoleId = null;
+        let selectedMember = null;
+        let roleAssignments = {
+            'PRID_1': 'Aditya Sadhu',
+            'PRID_2': null,
+            'PRID_3': null,
+            'PRID_4': null,
+            'PRID_5': null
+        };
+        
+        function selectRole(element, roleId) {
+            // Remove selection from all roles
+            document.querySelectorAll('.role-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Select clicked role
+            element.classList.add('selected');
+            selectedRoleId = roleId;
+            checkSelection();
+        }
+        
+        function checkSelection() {
+            selectedMember = document.getElementById('memberName').value;
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (selectedMember && selectedRoleId) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = `Confirm ${selectedRoleId} Role for ${selectedMember}`;
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Confirm Role Selection';
+            }
+        }
+        
+        function submitRole() {
+            if (!selectedMember || !selectedRoleId) {
+                showNotification('Please select both your name and a role.', 'error');
+                return;
+            }
+            
+            // Check if role is already taken
+            if (roleAssignments[selectedRoleId]) {
+                showNotification(`Role ${selectedRoleId} has already been claimed by ${roleAssignments[selectedRoleId]}`, 'error');
+                return;
+            }
+            
+            // Assign role
+            roleAssignments[selectedRoleId] = selectedMember;
+            
+            // Update UI
+            document.getElementById(`assignee-${selectedRoleId}`).textContent = selectedMember;
+            document.getElementById(`badge-${selectedRoleId}`).className = 'status-badge status-claimed';
+            document.getElementById(`badge-${selectedRoleId}`).textContent = 'CLAIMED';
+            document.getElementById(`status-${selectedRoleId}`).textContent = `Status: Claimed by ${selectedMember}`;
+            
+            // Show success message
+            showNotification(`Congratulations ${selectedMember}! You have successfully claimed the ${selectedRoleId} role.`, 'success');
+            
+            // Reset form
+            document.getElementById('memberName').value = '';
+            document.querySelectorAll('.role-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            selectedRoleId = null;
+            selectedMember = null;
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').textContent = 'Confirm Role Selection';
+        }
+        
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification ' + type;
+            notification.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
