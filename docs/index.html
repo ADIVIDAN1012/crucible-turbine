@@ -161,16 +161,25 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         
+        .google-login {
+            background: #4285F4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .google-login:hover {
+            background: #3367d6;
+        }
+        
         .supervisor-login {
             background: #fff3cd;
             padding: 1.5rem;
             border-radius: 10px;
             margin: 2rem 0;
             border: 1px solid #ffeaa7;
-        }
-        
-        .supervisor-login input {
-            margin-bottom: 1rem;
+            text-align: center;
         }
         
         .role-grid {
@@ -260,41 +269,6 @@
             border: 1px solid #f5c6cb;
         }
         
-        .data-section {
-            background: #e9f7fe;
-            padding: 1.5rem;
-            border-radius: 10px;
-            margin: 2rem 0;
-            display: none;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0;
-        }
-        
-        th, td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        th {
-            background: #4a6491;
-            color: white;
-        }
-        
-        tr:nth-child(even) {
-            background: #f2f2f2;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 1rem;
-            color: #4a6491;
-        }
-        
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -381,29 +355,13 @@
 
             <div class="supervisor-login">
                 <h2>Supervisor Access</h2>
-                <p>Enter supervisor credentials to view role selection data:</p>
-                <input type="password" id="supervisorPassword" placeholder="Enter supervisor password">
-                <button class="cta-button" onclick="loginSupervisor()" style="background: #6f42c1;">
-                    Access Data Dashboard
-                </button>
-                <div class="data-section" id="dataSection">
-                    <h3>Role Selection Data</h3>
-                    <div class="loading" id="loadingData">Loading data...</div>
-                    <table id="dataTable">
-                        <thead>
-                            <tr>
-                                <th>Member Name</th>
-                                <th>Role Selected</th>
-                                <th>Timestamp</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                        </tbody>
-                    </table>
-                    <button class="cta-button" onclick="exportToExcel()" style="background: #28a745;">
-                        Export to Excel
-                    </button>
-                </div>
+                <p>Supervisors can access the data dashboard using their Google account:</p>
+                <a href="/login" class="cta-button google-login">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                        <path fill="#FFFFFF" d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z"/>
+                    </svg>
+                    Login with Google
+                </a>
             </div>
 
             <div class="team-info">
@@ -446,13 +404,6 @@
     <script>
         // Initialize variables
         let selectedRoleId = null;
-        let roleAssignments = {
-            'PRID_1': 'Aditya Sadhu',
-            'PRID_2': null,
-            'PRID_3': null,
-            'PRID_4': null,
-            'PRID_5': null
-        };
         
         // Set timestamp on form load
         document.getElementById('timestamp').value = new Date().toISOString();
@@ -547,54 +498,6 @@
             }, 5000);
         }
         
-        function loginSupervisor() {
-            const password = document.getElementById('supervisorPassword').value;
-            // Simple password check for demo
-            if (password === 'crucible2026') {
-                document.getElementById('dataSection').style.display = 'block';
-                showNotification('Welcome, Supervisor! Data dashboard unlocked.', 'success');
-                loadData();
-            } else {
-                showNotification('Invalid supervisor password. Access denied.', 'error');
-            }
-        }
-        
-        function loadData() {
-            document.getElementById('loadingData').style.display = 'block';
-            
-            // Load role assignments
-            fetch('http://localhost:5000/api/assignments')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('loadingData').style.display = 'none';
-                if (data.success) {
-                    const tableBody = document.getElementById('tableBody');
-                    tableBody.innerHTML = '';
-                    
-                    if (data.data.length === 0) {
-                        tableBody.innerHTML = '<tr><td colspan="3">No data available. Submit the form to see results.</td></tr>';
-                    } else {
-                        data.data.forEach(entry => {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td>${entry.member_name}</td>
-                                <td>${entry.role_id} (${entry.role_name})</td>
-                                <td>${new Date(entry.timestamp).toLocaleString()}</td>
-                            `;
-                            tableBody.appendChild(row);
-                        });
-                    }
-                } else {
-                    showNotification('Failed to load data: ' + data.message, 'error');
-                }
-            })
-            .catch(error => {
-                document.getElementById('loadingData').style.display = 'none';
-                console.error('Error:', error);
-                showNotification('Failed to load data. Please try again.', 'error');
-            });
-        }
-        
         function loadRoleStatuses() {
             fetch('http://localhost:5000/api/roles')
             .then(response => response.json())
@@ -618,10 +521,6 @@
             .catch(error => {
                 console.error('Error loading role statuses:', error);
             });
-        }
-        
-        function exportToExcel() {
-            showNotification('Excel export would connect to your database in the full implementation.', 'success');
         }
         
         // Load role statuses on page load

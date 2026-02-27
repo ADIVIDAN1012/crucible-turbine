@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervisor Dashboard - Crucible Turbine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #2c3e50, #4a6491);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .content {
+            padding: 2rem;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .welcome-section {
+            background: #e3f2fd;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e1e8ed;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #4a6491;
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 1rem;
+        }
+        
+        .data-section {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e1e8ed;
+            margin-bottom: 2rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: #4a6491;
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: #4a6491;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .cta-button:hover {
+            background: #3a5275;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .logout-button {
+            background: #dc3545;
+        }
+        
+        .logout-button:hover {
+            background: #c82333;
+        }
+        
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .role-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e1e8ed;
+        }
+        
+        .role-card.reserved {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px solid #4a6491;
+        }
+        
+        .role-card h3 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 0.5rem;
+        }
+        
+        .status-reserved {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .status-claimed {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status-pending {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            background: #2c3e50;
+            color: #ecf0f1;
+            font-size: 0.9rem;
+        }
+        
+        .notification {
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+            text-align: center;
+            display: none;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .export-buttons {
+                flex-direction: column;
+            }
+            
+            .role-grid, .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Supervisor Dashboard</h1>
+            <div class="subtitle">Crucible Turbine Role Selection System</div>
+        </header>
+
+        <div class="content">
+            <div class="dashboard-header">
+                <h2>Role Selection Analytics</h2>
+                <div>
+                    <button class="cta-button logout-button" onclick="logout()">Logout</button>
+                </div>
+            </div>
+            
+            <div class="welcome-section">
+                <h3>Welcome, Supervisor!</h3>
+                <p>You have successfully authenticated with your Google account and can now access all role selection data.</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalAssignments">0</div>
+                    <div class="stat-label">Total Assignments</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-value" id="pendingRoles">0</div>
+                    <div class="stat-label">Pending Roles</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-value" id="claimedRoles">0</div>
+                    <div class="stat-label">Claimed Roles</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-value" id="teamMembers">0</div>
+                    <div class="stat-label">Team Members</div>
+                </div>
+            </div>
+            
+            <div class="data-section">
+                <h3>Role Selection Data</h3>
+                <div class="export-buttons">
+                    <button class="cta-button" onclick="exportToExcel()">
+                        Export to Excel (Google Sheets)
+                    </button>
+                    <button class="cta-button" onclick="exportToCSV()">
+                        Download CSV
+                    </button>
+                    <button class="cta-button" onclick="refreshData()">
+                        Refresh Data
+                    </button>
+                </div>
+                
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Member Name</th>
+                            <th>Role ID</th>
+                            <th>Role Name</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="4">Loading data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="data-section">
+                <h3>Current Role Status</h3>
+                <div class="role-grid">
+                    <div class="role-card reserved">
+                        <h3><span>PRID_1</span> Supervisor <span class="status-badge status-reserved">RESERVED</span></h3>
+                        <p><strong>Assigned to:</strong> Aditya Sadhu</p>
+                    </div>
+                    
+                    <div class="role-card">
+                        <h3><span>PRID_2</span> Auditor <span class="status-badge status-pending" id="badge-PRID_2">PENDING</span></h3>
+                        <p><strong>Assigned to:</strong> <span id="assignee-PRID_2">Unclaimed</span></p>
+                    </div>
+                    
+                    <div class="role-card">
+                        <h3><span>PRID_3</span> Designer <span class="status-badge status-pending" id="badge-PRID_3">PENDING</span></h3>
+                        <p><strong>Assigned to:</strong> <span id="assignee-PRID_3">Unclaimed</span></p>
+                    </div>
+                    
+                    <div class="role-card">
+                        <h3><span>PRID_4</span> Integrator <span class="status-badge status-pending" id="badge-PRID_4">PENDING</span></h3>
+                        <p><strong>Assigned to:</strong> <span id="assignee-PRID_4">Unclaimed</span></p>
+                    </div>
+                    
+                    <div class="role-card">
+                        <h3><span>PRID_5</span> DBA <span class="status-badge status-pending" id="badge-PRID_5">PENDING</span></h3>
+                        <p><strong>Assigned to:</strong> <span id="assignee-PRID_5">Unclaimed</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Crucible Turbine Role Selection System v1.0</p>
+            <p>Authenticated with Google Account</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Load data when page loads
+        window.onload = function() {
+            loadData();
+            loadRoleStatuses();
+        };
+        
+        function loadData() {
+            fetch('/api/assignments')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const tableBody = document.getElementById('tableBody');
+                    tableBody.innerHTML = '';
+                    
+                    if (data.data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="4">No data available.</td></tr>';
+                    } else {
+                        data.data.forEach(entry => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${entry.member_name}</td>
+                                <td>${entry.role_id}</td>
+                                <td>${entry.role_name}</td>
+                                <td>${new Date(entry.timestamp).toLocaleString()}</td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                    }
+                    
+                    // Update stats
+                    updateStats(data.data);
+                } else {
+                    document.getElementById('tableBody').innerHTML = '<tr><td colspan="4">Error loading data: ' + data.message + '</td></tr>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="4">Failed to load data. Please try again.</td></tr>';
+            });
+        }
+        
+        function loadRoleStatuses() {
+            fetch('/api/roles')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    data.data.forEach(role => {
+                        if (document.getElementById(`assignee-${role.role_id}`)) {
+                            document.getElementById(`assignee-${role.role_id}`).textContent = role.assigned_to || 'Unclaimed';
+                        }
+                        if (document.getElementById(`badge-${role.role_id}`)) {
+                            const badge = document.getElementById(`badge-${role.role_id}`);
+                            badge.textContent = role.status === 'CLAIMED' ? 'CLAIMED' : 
+                                              role.status === 'RESERVED' ? 'RESERVED' : 'PENDING';
+                            badge.className = 'status-badge ' + 
+                                            (role.status === 'CLAIMED' ? 'status-claimed' : 
+                                             role.status === 'RESERVED' ? 'status-reserved' : 'status-pending');
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading role statuses:', error);
+            });
+        }
+        
+        function updateStats(assignments) {
+            document.getElementById('totalAssignments').textContent = assignments.length;
+            
+            // Count unique team members
+            const uniqueMembers = [...new Set(assignments.map(a => a.member_name))];
+            document.getElementById('teamMembers').textContent = uniqueMembers.length;
+            
+            // For pending and claimed roles, we would need to fetch this data separately
+            // or calculate it from the roles API
+        }
+        
+        function exportToExcel() {
+            // This would connect to Google Sheets API in a real implementation
+            alert('In a full implementation, this would export data directly to your Google Sheets.');
+            // Simulate the action for now
+            window.open('/api/export-data', '_blank');
+        }
+        
+        function exportToCSV() {
+            window.open('/api/export-data', '_blank');
+        }
+        
+        function refreshData() {
+            loadData();
+            loadRoleStatuses();
+            showNotification('Data refreshed successfully!', 'success');
+        }
+        
+        function logout() {
+            // Clear session and redirect to login
+            fetch('/logout', {method: 'POST'})
+            .then(() => {
+                window.location.href = '/';
+            });
+        }
+        
+        function showNotification(message, type) {
+            // Simple notification for demo purposes
+            alert(message);
+        }
+    </script>
+</body>
+</html>

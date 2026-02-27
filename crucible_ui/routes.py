@@ -1,7 +1,9 @@
-from flask import jsonify, request, render_template, redirect, url_for
+from flask import jsonify, request, render_template, redirect, url_for, session, Response
 from crucible_ui import app, db
 from crucible_ui.models import RoleAssignment, RoleStatus
 import json
+import pandas as pd
+from io import StringIO
 
 # API endpoint to submit role selection
 @app.route('/api/select-role', methods=['POST'])
@@ -100,6 +102,88 @@ def get_roles():
                 })
         
         return jsonify({'success': True, 'data': roles_data}), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+# Google OAuth login endpoint
+@app.route('/login')
+def login():
+    from crucible_ui.auth import authenticate_with_google
+    authorization_url = authenticate_with_google()
+    return redirect(authorization_url)
+
+# Google OAuth callback endpoint
+@app.route('/callback')
+def callback():
+    try:
+        from crucible_ui.auth import exchange_code_for_tokens, get_user_info, is_authorized_user
+        
+        # Exchange code for tokens
+        credentials = exchange_code_for_tokens(request.args.get('code'))
+        
+        # Get user info
+        user_info = get_user_info(credentials)
+        session['google_user'] = user_info
+        
+        # Check if user is authorized
+        if is_authorized_user(user_info['email']):
+            session['authorized'] = True
+            return redirect(url_for('supervisor_dashboard'))
+        else:
+            session['authorized'] = False
+            return "Unauthorized access. Only supervisors can access this dashboard.", 403
+            
+    except Exception as e:
+        return f"Authentication failed: {str(e)}", 400
+
+# Supervisor dashboard endpoint
+@app.route('/supervisor')
+def supervisor_dashboard():
+    if not session.get('authorized'):
+        return redirect(url_for('login'))
+    
+    return render_template('supervisor_dashboard.html')
+
+# Logout endpoint
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.clear()
+    return jsonify({'success': True, 'message': 'Logged out successfully'})
+
+# API endpoint to export data to Excel/CSV
+@app.route('/api/export-data')
+def export_data():
+    if not session.get('authorized'):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+    
+    try:
+        # Get all assignments
+        assignments = RoleAssignment.query.all()
+        
+        # Convert to DataFrame
+        data = []
+        for assignment in assignments:
+            data.append({
+                'Member Name': assignment.member_name,
+                'Role ID': assignment.role_id,
+                'Role Name': assignment.role_name,
+                'Timestamp': assignment.timestamp.isoformat()
+            })
+        
+        df = pd.DataFrame(data)
+        
+        # Convert to CSV
+        csv_buffer = StringIO()
+        df.to_csv(csv_buffer, index=False)
+        csv_data = csv_buffer.getvalue()
+        
+        # Return CSV file
+        return Response(
+            csv_data,
+            mimetype='text/csv',
+            headers={"Content-Disposition": "attachment; filename=role_selections.csv"}
+        )
         
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
