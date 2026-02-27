@@ -289,6 +289,12 @@
             background: #f2f2f2;
         }
         
+        .loading {
+            text-align: center;
+            padding: 1rem;
+            color: #4a6491;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -382,6 +388,7 @@
                 </button>
                 <div class="data-section" id="dataSection">
                     <h3>Role Selection Data</h3>
+                    <div class="loading" id="loadingData">Loading data...</div>
                     <table id="dataTable">
                         <thead>
                             <tr>
@@ -391,9 +398,6 @@
                             </tr>
                         </thead>
                         <tbody id="tableBody">
-                            <tr>
-                                <td colspan="3">No data available. Submit the form to see results.</td>
-                            </tr>
                         </tbody>
                     </table>
                     <button class="cta-button" onclick="exportToExcel()" style="background: #28a745;">
@@ -466,35 +470,43 @@
                 return;
             }
             
-            // Check if role is already taken
-            if (roleAssignments[selectedRole]) {
-                showNotification(`Role ${selectedRole} has already been claimed by ${roleAssignments[selectedRole]}`, 'error');
-                return;
-            }
+            // Send data to API
+            const formData = {
+                memberName: memberName,
+                selectedRole: selectedRole,
+                timestamp: timestamp
+            };
             
-            // In a real implementation, this would send data to a server
-            // For now, we'll simulate the process
-            console.log('Form submitted:', { memberName, selectedRole, timestamp });
-            
-            // Assign role and update UI
-            roleAssignments[selectedRole] = memberName;
-            document.getElementById(`assignee-${selectedRole}`).textContent = memberName;
-            document.getElementById(`badge-${selectedRole}`).className = 'status-badge status-claimed';
-            document.getElementById(`badge-${selectedRole}`).textContent = 'CLAIMED';
-            document.getElementById(`status-${selectedRole}`).textContent = `Status: Claimed by ${memberName}`;
-            
-            // Show success message
-            showNotification(`Thank you ${memberName}! Your ${selectedRole} role selection has been recorded.`, 'success');
-            
-            // Reset form
-            document.getElementById('roleSelectionForm').reset();
-            document.querySelectorAll('.role-option').forEach(option => {
-                option.classList.remove('selected');
+            fetch('http://localhost:5000/api/select-role', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    // Reset form
+                    document.getElementById('roleSelectionForm').reset();
+                    document.querySelectorAll('.role-option').forEach(option => {
+                        option.classList.remove('selected');
+                    });
+                    selectedRoleId = null;
+                    document.getElementById('submitBtn').disabled = true;
+                    document.getElementById('submitBtn').textContent = 'Confirm Role Selection';
+                    document.getElementById('timestamp').value = new Date().toISOString();
+                    // Refresh role statuses
+                    loadRoleStatuses();
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Failed to submit role selection. Please try again.', 'error');
             });
-            selectedRoleId = null;
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('submitBtn').textContent = 'Confirm Role Selection';
-            document.getElementById('timestamp').value = new Date().toISOString();
         });
         
         function selectRole(element, roleId) {
@@ -537,44 +549,85 @@
         
         function loginSupervisor() {
             const password = document.getElementById('supervisorPassword').value;
-            // In a real implementation, this would verify against a server
-            // For demo purposes, we'll use a simple check
+            // Simple password check for demo
             if (password === 'crucible2026') {
                 document.getElementById('dataSection').style.display = 'block';
                 showNotification('Welcome, Supervisor! Data dashboard unlocked.', 'success');
-                loadTableData();
+                loadData();
             } else {
                 showNotification('Invalid supervisor password. Access denied.', 'error');
             }
         }
         
-        function loadTableData() {
-            // In a real implementation, this would fetch data from a database
-            // For demo purposes, we'll show sample data
-            const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = `
-                <tr>
-                    <td>Rohit Pandit</td>
-                    <td>PRID_2 (Auditor)</td>
-                    <td>2026-02-27T15:30:45Z</td>
-                </tr>
-                <tr>
-                    <td>Khushi</td>
-                    <td>PRID_3 (Designer)</td>
-                    <td>2026-02-27T16:45:22Z</td>
-                </tr>
-                <tr>
-                    <td>Vanshita</td>
-                    <td>PRID_4 (Integrator)</td>
-                    <td>2026-02-27T17:15:10Z</td>
-                </tr>
-            `;
+        function loadData() {
+            document.getElementById('loadingData').style.display = 'block';
+            
+            // Load role assignments
+            fetch('http://localhost:5000/api/assignments')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loadingData').style.display = 'none';
+                if (data.success) {
+                    const tableBody = document.getElementById('tableBody');
+                    tableBody.innerHTML = '';
+                    
+                    if (data.data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="3">No data available. Submit the form to see results.</td></tr>';
+                    } else {
+                        data.data.forEach(entry => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${entry.member_name}</td>
+                                <td>${entry.role_id} (${entry.role_name})</td>
+                                <td>${new Date(entry.timestamp).toLocaleString()}</td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                    }
+                } else {
+                    showNotification('Failed to load data: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                document.getElementById('loadingData').style.display = 'none';
+                console.error('Error:', error);
+                showNotification('Failed to load data. Please try again.', 'error');
+            });
+        }
+        
+        function loadRoleStatuses() {
+            fetch('http://localhost:5000/api/roles')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    data.data.forEach(role => {
+                        if (document.getElementById(`assignee-${role.role_id}`)) {
+                            document.getElementById(`assignee-${role.role_id}`).textContent = role.assigned_to || 'Unclaimed';
+                        }
+                        if (document.getElementById(`badge-${role.role_id}`)) {
+                            const badge = document.getElementById(`badge-${role.role_id}`);
+                            badge.textContent = role.status === 'CLAIMED' ? 'CLAIMED' : 
+                                              role.status === 'RESERVED' ? 'RESERVED' : 'PENDING';
+                            badge.className = 'status-badge ' + 
+                                            (role.status === 'CLAIMED' ? 'status-claimed' : 
+                                             role.status === 'RESERVED' ? 'status-reserved' : 'status-pending');
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading role statuses:', error);
+            });
         }
         
         function exportToExcel() {
-            // In a real implementation, this would export actual database data
-            showNotification('Excel export feature would connect to database in production.', 'success');
+            showNotification('Excel export would connect to your database in the full implementation.', 'success');
         }
+        
+        // Load role statuses on page load
+        window.onload = function() {
+            loadRoleStatuses();
+        };
     </script>
 </body>
 </html>
