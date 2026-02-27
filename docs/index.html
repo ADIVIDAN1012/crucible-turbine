@@ -356,7 +356,7 @@
             <div class="supervisor-login">
                 <h2>Supervisor Access</h2>
                 <p>Supervisors can access the data dashboard using their Google account:</p>
-                <a href="/login" class="cta-button google-login">
+                <a href="http://localhost:5000/login" class="cta-button google-login">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                         <path fill="#FFFFFF" d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z"/>
                     </svg>
@@ -421,43 +421,25 @@
                 return;
             }
             
-            // Send data to API
+            // Send data to API (this requires the local Flask server to be running)
             const formData = {
                 memberName: memberName,
                 selectedRole: selectedRole,
                 timestamp: timestamp
             };
             
-            fetch('http://localhost:5000/api/select-role', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification(data.message, 'success');
-                    // Reset form
-                    document.getElementById('roleSelectionForm').reset();
-                    document.querySelectorAll('.role-option').forEach(option => {
-                        option.classList.remove('selected');
-                    });
-                    selectedRoleId = null;
-                    document.getElementById('submitBtn').disabled = true;
-                    document.getElementById('submitBtn').textContent = 'Confirm Role Selection';
-                    document.getElementById('timestamp').value = new Date().toISOString();
-                    // Refresh role statuses
-                    loadRoleStatuses();
-                } else {
-                    showNotification(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Failed to submit role selection. Please try again.', 'error');
+            // For GitHub Pages, we'll show a message that the backend is required
+            showNotification('Role selection would be submitted to the backend database in the full implementation. Please run the local Flask server for full functionality.', 'success');
+            
+            // Reset form
+            document.getElementById('roleSelectionForm').reset();
+            document.querySelectorAll('.role-option').forEach(option => {
+                option.classList.remove('selected');
             });
+            selectedRoleId = null;
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').textContent = 'Confirm Role Selection';
+            document.getElementById('timestamp').value = new Date().toISOString();
         });
         
         function selectRole(element, roleId) {
@@ -498,34 +480,17 @@
             }, 5000);
         }
         
-        function loadRoleStatuses() {
-            fetch('http://localhost:5000/api/roles')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    data.data.forEach(role => {
-                        if (document.getElementById(`assignee-${role.role_id}`)) {
-                            document.getElementById(`assignee-${role.role_id}`).textContent = role.assigned_to || 'Unclaimed';
-                        }
-                        if (document.getElementById(`badge-${role.role_id}`)) {
-                            const badge = document.getElementById(`badge-${role.role_id}`);
-                            badge.textContent = role.status === 'CLAIMED' ? 'CLAIMED' : 
-                                              role.status === 'RESERVED' ? 'RESERVED' : 'PENDING';
-                            badge.className = 'status-badge ' + 
-                                            (role.status === 'CLAIMED' ? 'status-claimed' : 
-                                             role.status === 'RESERVED' ? 'status-reserved' : 'status-pending');
-                        }
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error loading role statuses:', error);
-            });
-        }
-        
-        // Load role statuses on page load
+        // Demo data for GitHub Pages version
         window.onload = function() {
-            loadRoleStatuses();
+            // This is just demo data for the GitHub Pages version
+            // In the full implementation, this would load from the database
+            document.getElementById('assignee-PRID_2').textContent = 'Rohit Pandit';
+            document.getElementById('badge-PRID_2').className = 'status-badge status-claimed';
+            document.getElementById('badge-PRID_2').textContent = 'CLAIMED';
+            
+            document.getElementById('assignee-PRID_3').textContent = 'Khushi';
+            document.getElementById('badge-PRID_3').className = 'status-badge status-claimed';
+            document.getElementById('badge-PRID_3').textContent = 'CLAIMED';
         };
     </script>
 </body>
