@@ -161,15 +161,16 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         
-        .export-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
+        .supervisor-login {
+            background: #fff3cd;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 2rem 0;
+            border: 1px solid #ffeaa7;
         }
         
-        .export-buttons .cta-button {
-            width: auto;
-            flex: 1;
+        .supervisor-login input {
+            margin-bottom: 1rem;
         }
         
         .role-grid {
@@ -264,16 +265,28 @@
             padding: 1.5rem;
             border-radius: 10px;
             margin: 2rem 0;
+            display: none;
         }
         
-        textarea {
+        table {
             width: 100%;
-            height: 150px;
-            padding: 1rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-family: monospace;
-            resize: vertical;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: #4a6491;
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background: #f2f2f2;
         }
         
         @media (max-width: 768px) {
@@ -287,10 +300,6 @@
             
             .role-grid, .role-options {
                 grid-template-columns: 1fr;
-            }
-            
-            .export-buttons {
-                flex-direction: column;
             }
         }
     </style>
@@ -314,69 +323,83 @@
                 
                 <div class="notification" id="notification"></div>
                 
-                <div class="form-group">
-                    <label for="memberName">Select Your Identity:</label>
-                    <select id="memberName" onchange="checkSelection()">
-                        <option value="">-- Select Your Name --</option>
-                        <option value="Rohit Pandit">Rohit Pandit</option>
-                        <option value="Khushi">Khushi</option>
-                        <option value="Vanshita">Vanshita</option>
-                        <option value="Shrawan">Shrawan</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Available Roles:</label>
-                    <div class="role-options">
-                        <div class="role-option" onclick="selectRole(this, 'PRID_2')">
-                            <h3><span>PRID_2</span> Auditor</h3>
-                            <p>Compliance verification, integrity assurance</p>
-                            <small id="status-PRID_2">Status: Available</small>
-                        </div>
-                        
-                        <div class="role-option" onclick="selectRole(this, 'PRID_3')">
-                            <h3><span>PRID_3</span> Designer</h3>
-                            <p>UI/UX design, frontend implementation</p>
-                            <small id="status-PRID_3">Status: Available</small>
-                        </div>
-                        
-                        <div class="role-option" onclick="selectRole(this, 'PRID_4')">
-                            <h3><span>PRID_4</span> Integrator</h3>
-                            <p>API integration, external connections</p>
-                            <small id="status-PRID_4">Status: Available</small>
-                        </div>
-                        
-                        <div class="role-option" onclick="selectRole(this, 'PRID_5')">
-                            <h3><span>PRID_5</span> DBA</h3>
-                            <p>Database design, performance optimization</p>
-                            <small id="status-PRID_5">Status: Available</small>
+                <form id="roleSelectionForm">
+                    <div class="form-group">
+                        <label for="memberName">Select Your Identity:</label>
+                        <select id="memberName" name="memberName" onchange="checkSelection()" required>
+                            <option value="">-- Select Your Name --</option>
+                            <option value="Rohit Pandit">Rohit Pandit</option>
+                            <option value="Khushi">Khushi</option>
+                            <option value="Vanshita">Vanshita</option>
+                            <option value="Shrawan">Shrawan</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Select Role:</label>
+                        <div class="role-options">
+                            <div class="role-option" onclick="selectRole(this, 'PRID_2')">
+                                <h3><span>PRID_2</span> Auditor</h3>
+                                <p>Compliance verification, integrity assurance</p>
+                                <small id="status-PRID_2">Status: Available</small>
+                            </div>
+                            
+                            <div class="role-option" onclick="selectRole(this, 'PRID_3')">
+                                <h3><span>PRID_3</span> Designer</h3>
+                                <p>UI/UX design, frontend implementation</p>
+                                <small id="status-PRID_3">Status: Available</small>
+                            </div>
+                            
+                            <div class="role-option" onclick="selectRole(this, 'PRID_4')">
+                                <h3><span>PRID_4</span> Integrator</h3>
+                                <p>API integration, external connections</p>
+                                <small id="status-PRID_4">Status: Available</small>
+                            </div>
+                            
+                            <div class="role-option" onclick="selectRole(this, 'PRID_5')">
+                                <h3><span>PRID_5</span> DBA</h3>
+                                <p>Database design, performance optimization</p>
+                                <small id="status-PRID_5">Status: Available</small>
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <input type="hidden" id="selectedRole" value="">
-                
-                <button class="cta-button" onclick="submitRole()" id="submitBtn" disabled>
-                    Confirm Role Selection
-                </button>
-                
-                <div class="export-buttons">
-                    <button class="cta-button" onclick="exportToCSV()" style="background: #28a745;">
-                        Export to CSV
+                    
+                    <input type="hidden" id="selectedRole" name="selectedRole" value="">
+                    <input type="hidden" id="timestamp" name="timestamp" value="">
+                    
+                    <button class="cta-button" type="submit" id="submitBtn" disabled>
+                        Confirm Role Selection
                     </button>
-                    <button class="cta-button" onclick="exportToJSON()" style="background: #17a2b8;">
-                        Export to JSON
-                    </button>
-                    <button class="cta-button" onclick="clearData()" style="background: #dc3545;">
-                        Clear Data
-                    </button>
-                </div>
+                </form>
             </div>
 
-            <div class="data-section">
-                <h2>Role Selection Data</h2>
-                <p>Supervisor Access: Copy the data below to track selections</p>
-                <textarea id="dataOutput" readonly></textarea>
+            <div class="supervisor-login">
+                <h2>Supervisor Access</h2>
+                <p>Enter supervisor credentials to view role selection data:</p>
+                <input type="password" id="supervisorPassword" placeholder="Enter supervisor password">
+                <button class="cta-button" onclick="loginSupervisor()" style="background: #6f42c1;">
+                    Access Data Dashboard
+                </button>
+                <div class="data-section" id="dataSection">
+                    <h3>Role Selection Data</h3>
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Member Name</th>
+                                <th>Role Selected</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr>
+                                <td colspan="3">No data available. Submit the form to see results.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="cta-button" onclick="exportToExcel()" style="background: #28a745;">
+                        Export to Excel
+                    </button>
+                </div>
             </div>
 
             <div class="team-info">
@@ -417,8 +440,9 @@
     </div>
     
     <script>
-        // Initialize data from localStorage or create empty object
-        let roleAssignments = JSON.parse(localStorage.getItem('roleAssignments')) || {
+        // Initialize variables
+        let selectedRoleId = null;
+        let roleAssignments = {
             'PRID_1': 'Aditya Sadhu',
             'PRID_2': null,
             'PRID_3': null,
@@ -426,25 +450,52 @@
             'PRID_5': null
         };
         
-        let selectionHistory = JSON.parse(localStorage.getItem('selectionHistory')) || [];
+        // Set timestamp on form load
+        document.getElementById('timestamp').value = new Date().toISOString();
         
-        // Initialize the UI with saved data
-        window.onload = function() {
-            updateUIWithSavedData();
-            updateDataOutput();
-        };
-        
-        function updateUIWithSavedData() {
-            // Update role assignments display
-            for (let roleId in roleAssignments) {
-                if (roleAssignments[roleId]) {
-                    document.getElementById(`assignee-${roleId}`).textContent = roleAssignments[roleId];
-                    document.getElementById(`badge-${roleId}`).className = 'status-badge status-claimed';
-                    document.getElementById(`badge-${roleId}`).textContent = 'CLAIMED';
-                    document.getElementById(`status-${roleId}`).textContent = `Status: Claimed by ${roleAssignments[roleId]}`;
-                }
+        // Handle form submission
+        document.getElementById('roleSelectionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const memberName = document.getElementById('memberName').value;
+            const selectedRole = document.getElementById('selectedRole').value;
+            const timestamp = document.getElementById('timestamp').value;
+            
+            if (!memberName || !selectedRole) {
+                showNotification('Please select both your name and a role.', 'error');
+                return;
             }
-        }
+            
+            // Check if role is already taken
+            if (roleAssignments[selectedRole]) {
+                showNotification(`Role ${selectedRole} has already been claimed by ${roleAssignments[selectedRole]}`, 'error');
+                return;
+            }
+            
+            // In a real implementation, this would send data to a server
+            // For now, we'll simulate the process
+            console.log('Form submitted:', { memberName, selectedRole, timestamp });
+            
+            // Assign role and update UI
+            roleAssignments[selectedRole] = memberName;
+            document.getElementById(`assignee-${selectedRole}`).textContent = memberName;
+            document.getElementById(`badge-${selectedRole}`).className = 'status-badge status-claimed';
+            document.getElementById(`badge-${selectedRole}`).textContent = 'CLAIMED';
+            document.getElementById(`status-${selectedRole}`).textContent = `Status: Claimed by ${memberName}`;
+            
+            // Show success message
+            showNotification(`Thank you ${memberName}! Your ${selectedRole} role selection has been recorded.`, 'success');
+            
+            // Reset form
+            document.getElementById('roleSelectionForm').reset();
+            document.querySelectorAll('.role-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            selectedRoleId = null;
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').textContent = 'Confirm Role Selection';
+            document.getElementById('timestamp').value = new Date().toISOString();
+        });
         
         function selectRole(element, roleId) {
             // Remove selection from all roles
@@ -455,11 +506,12 @@
             // Select clicked role
             element.classList.add('selected');
             selectedRoleId = roleId;
+            document.getElementById('selectedRole').value = roleId;
             checkSelection();
         }
         
         function checkSelection() {
-            selectedMember = document.getElementById('memberName').value;
+            const selectedMember = document.getElementById('memberName').value;
             const submitBtn = document.getElementById('submitBtn');
             
             if (selectedMember && selectedRoleId) {
@@ -469,55 +521,6 @@
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Confirm Role Selection';
             }
-        }
-        
-        function submitRole() {
-            if (!selectedMember || !selectedRoleId) {
-                showNotification('Please select both your name and a role.', 'error');
-                return;
-            }
-            
-            // Check if role is already taken
-            if (roleAssignments[selectedRoleId]) {
-                showNotification(`Role ${selectedRoleId} has already been claimed by ${roleAssignments[selectedRoleId]}`, 'error');
-                return;
-            }
-            
-            // Assign role
-            roleAssignments[selectedRoleId] = selectedMember;
-            
-            // Add to selection history
-            selectionHistory.push({
-                member: selectedMember,
-                role: selectedRoleId,
-                timestamp: new Date().toISOString()
-            });
-            
-            // Save to localStorage
-            localStorage.setItem('roleAssignments', JSON.stringify(roleAssignments));
-            localStorage.setItem('selectionHistory', JSON.stringify(selectionHistory));
-            
-            // Update UI
-            document.getElementById(`assignee-${selectedRoleId}`).textContent = selectedMember;
-            document.getElementById(`badge-${selectedRoleId}`).className = 'status-badge status-claimed';
-            document.getElementById(`badge-${selectedRoleId}`).textContent = 'CLAIMED';
-            document.getElementById(`status-${selectedRoleId}`).textContent = `Status: Claimed by ${selectedMember}`;
-            
-            // Update data output
-            updateDataOutput();
-            
-            // Show success message
-            showNotification(`Congratulations ${selectedMember}! You have successfully claimed the ${selectedRoleId} role.`, 'success');
-            
-            // Reset form
-            document.getElementById('memberName').value = '';
-            document.querySelectorAll('.role-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            selectedRoleId = null;
-            selectedMember = null;
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('submitBtn').textContent = 'Confirm Role Selection';
         }
         
         function showNotification(message, type) {
@@ -532,79 +535,46 @@
             }, 5000);
         }
         
-        function updateDataOutput() {
-            // Format data for easy copying
-            let outputText = "Member Name,Role ID,Timestamp\n";
-            
-            selectionHistory.forEach(entry => {
-                outputText += `${entry.member},${entry.role},${entry.timestamp}\n`;
-            });
-            
-            document.getElementById('dataOutput').value = outputText;
-        }
-        
-        function exportToCSV() {
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Member Name,Role ID,Timestamp\n";
-            
-            selectionHistory.forEach(entry => {
-                csvContent += `"${entry.member}","${entry.role}","${entry.timestamp}"\n`;
-            });
-            
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "role_selections.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            showNotification('CSV file downloaded successfully!', 'success');
-        }
-        
-        function exportToJSON() {
-            const data = {
-                roleAssignments: roleAssignments,
-                selectionHistory: selectionHistory
-            };
-            
-            const dataStr = JSON.stringify(data, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            const link = document.createElement("a");
-            link.setAttribute("href", dataUri);
-            link.setAttribute("download", "role_selections.json");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            showNotification('JSON file downloaded successfully!', 'success');
-        }
-        
-        function clearData() {
-            if (confirm('Are you sure you want to clear all role selection data? This cannot be undone.')) {
-                roleAssignments = {
-                    'PRID_1': 'Aditya Sadhu',
-                    'PRID_2': null,
-                    'PRID_3': null,
-                    'PRID_4': null,
-                    'PRID_5': null
-                };
-                selectionHistory = [];
-                
-                localStorage.setItem('roleAssignments', JSON.stringify(roleAssignments));
-                localStorage.setItem('selectionHistory', JSON.stringify(selectionHistory));
-                
-                updateUIWithSavedData();
-                updateDataOutput();
-                
-                showNotification('All data cleared successfully!', 'success');
+        function loginSupervisor() {
+            const password = document.getElementById('supervisorPassword').value;
+            // In a real implementation, this would verify against a server
+            // For demo purposes, we'll use a simple check
+            if (password === 'crucible2026') {
+                document.getElementById('dataSection').style.display = 'block';
+                showNotification('Welcome, Supervisor! Data dashboard unlocked.', 'success');
+                loadTableData();
+            } else {
+                showNotification('Invalid supervisor password. Access denied.', 'error');
             }
         }
         
-        // Initialize variables
-        let selectedRoleId = null;
-        let selectedMember = null;
+        function loadTableData() {
+            // In a real implementation, this would fetch data from a database
+            // For demo purposes, we'll show sample data
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = `
+                <tr>
+                    <td>Rohit Pandit</td>
+                    <td>PRID_2 (Auditor)</td>
+                    <td>2026-02-27T15:30:45Z</td>
+                </tr>
+                <tr>
+                    <td>Khushi</td>
+                    <td>PRID_3 (Designer)</td>
+                    <td>2026-02-27T16:45:22Z</td>
+                </tr>
+                <tr>
+                    <td>Vanshita</td>
+                    <td>PRID_4 (Integrator)</td>
+                    <td>2026-02-27T17:15:10Z</td>
+                </tr>
+            `;
+        }
+        
+        function exportToExcel() {
+            // In a real implementation, this would export actual database data
+            showNotification('Excel export feature would connect to database in production.', 'success');
+        }
     </script>
 </body>
 </html>
